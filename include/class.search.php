@@ -1304,6 +1304,38 @@ class DepartmentChoiceField extends AdvancedSearchSelectionField {
     }
 }
 
+class IsReferralField extends FormField
+{
+
+    static $isreferral;
+
+    function getSearchMethods()
+    {
+        return array(
+            'set' =>        __('is referral'),
+            'nset' =>    __('is not referral'),
+        );
+    }
+
+    function getSearchQ($method, $value, $name = false)
+    {
+        $this::$isreferral = $method;
+        $Q = new Q();
+        switch ($method) {
+            case 'set':
+                return $Q->add(array("thread__referrals__agent__staff_id" => $_SESSION["_auth"]["staff"]["id"]), array("thread__referrals__agent__dept_id" => $_SESSION["_auth"]["staff"]["id"]));
+            case 'nset':
+                return $Q->add(Q::not(array("thread__referrals__agent__staff_id" => $_SESSION["_auth"]["staff"]["id"]), array("thread__referrals__agent__dept_id" => $_SESSION["_auth"]["staff"]["id"])));
+        }
+    }
+
+    static function getMethod()
+    {
+        return IsReferralField::$isreferral;
+    }
+   
+}
+
 
 class AssigneeChoiceField extends ChoiceField {
 

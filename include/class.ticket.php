@@ -2342,6 +2342,9 @@ implements RestrictedAccess, Threadable, Searchable {
             'sla_id' => new SLAChoiceField(array(
                 'label' => __('SLA Plan'),
             )),
+            'referral' => new IsReferralField(array( 
+                'label' => __('Referral'), 
+            )),
             'topic_id' => new HelpTopicChoiceField(array(
                 'label' => __('Help Topic'),
             )),

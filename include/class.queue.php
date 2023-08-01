@@ -261,6 +261,7 @@ class CustomQueue extends VerySimpleModel {
                 'created',
                 'est_duedate',
                 'duedate',
+                'referral'
             )
         );
 
@@ -688,6 +689,7 @@ class CustomQueue extends VerySimpleModel {
         if ($use_template && ($template = CustomQueue::lookup(1)))
             return $template->getColumns();
 
+            
         // Last resort — use standard columns
         foreach (array(
             QueueColumn::placeholder(array(
@@ -1766,6 +1768,7 @@ extends QueueColumnAnnotation {
 
     static function annotate($query, $name=false) {
         $name = $name ?: static::$qname;
+        
         return $query->annotate(array(
             $name => TicketThread::objects()
             ->filter(array('ticket__ticket_id' => new SqlField('ticket_id', 1)))
@@ -1968,6 +1971,38 @@ extends ChoiceField {
         return $fields;
     }
 }
+
+
+
+class ReferralDecoration
+extends QueueColumnAnnotation
+{
+    static $icon = "exchange";
+    static $qname = "_referral_count";
+    static $desc = /* @trans */ 'Referral Count';
+    static function annotate($query, $name = false)
+    {   
+        return $query->distinct("ticket_id");
+    }
+    function getDecoration($row, $text)
+    {
+
+        $refId  = $_SESSION["_auth"]["staff"]["id"];
+        $sql = 'SELECT COUNT(*) AS count FROM `ost_thread_referral` WHERE `object_id` = '.$refId ." AND `thread_id` = ".$row["ticket_id"]."";
+        $res = db_result(db_query($sql));
+        if ($res != 0) {
+            return sprintf(
+                '<span class="pull-right faded-more" data-toggle="tooltip" title="My referral"><i class="icon-exchange"></i></span>',
+            );
+        }
+    }
+
+    function isVisible($row)
+    {
+        return true;
+    }
+}
+
 
 class QueueColumnCondition {
     var $config;
@@ -2558,8 +2593,10 @@ extends VerySimpleModel {
 
         // Do the annotations
         $this->_annotations = $annotations = array();
+
         if (isset($vars['annotations'])) {
             foreach (@$vars['annotations'] as $i=>$class) {
+               
                 if ($vars['deco_column'][$i] != $this->id)
                     continue;
                 if (!class_exists($class) || !is_subclass_of($class, 'QueueColumnAnnotation'))
