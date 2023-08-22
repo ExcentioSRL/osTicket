@@ -2345,6 +2345,9 @@ implements RestrictedAccess, Threadable, Searchable {
             'topic_id' => new HelpTopicChoiceField(array(
                 'label' => __('Help Topic'),
             )),
+            'referral' => new IsReferralField(array( 
+                'label' => __('Referral'), 
+            )),
             'source' => new TicketSourceChoiceField(array(
                 'label' => __('Ticket Source'),
             )),

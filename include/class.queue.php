@@ -261,6 +261,7 @@ class CustomQueue extends VerySimpleModel {
                 'created',
                 'est_duedate',
                 'duedate',
+                'referral'
             )
         );
 
@@ -1969,6 +1970,34 @@ extends ChoiceField {
     }
 }
 
+class ReferralDecoration
+extends QueueColumnAnnotation
+{
+    static $icon = "exchange";
+    static $qname = "_referral_count";
+    static $desc = /* @trans */ 'Referral Count';
+    static function annotate($query, $name = false)
+    {   
+        return $query->distinct("ticket_id");
+    }
+    function getDecoration($row, $text)
+    {
+
+        $refId  = $_SESSION["_auth"]["staff"]["id"];
+        $sql = 'SELECT COUNT(*) AS count FROM `ost_thread_referral` WHERE `object_id` = '.$refId ." AND `thread_id` = ".$row["ticket_id"]."";
+        $res = db_result(db_query($sql));
+        if ($res != 0) {
+            return sprintf(
+                '<span class="pull-right faded-more" data-toggle="tooltip" title="My referral"><i class="icon-exchange"></i></span>',
+            );
+        }
+    }
+
+    function isVisible($row)
+    {
+        return true;
+    }
+}
 class QueueColumnCondition {
     var $config;
     var $queue;
